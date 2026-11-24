@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="it"><head><meta charset="utf-8">
+<style>
+:root{--sky:#1FA2E0;--skyd:#0C7FB8;--skyl:#E3F4FC;--sky2:#7FD0F5;--blk:#0B0D12;--red:#FF5A5F;--grn:#2FD38A}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1080px;height:1920px;overflow:hidden;background:var(--blk);font-family:Inter,sans-serif}
+.sc{position:absolute;inset:0;opacity:0;overflow:hidden}
+.P{font-family:Poppins}
+.grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.035) 2px,transparent 2px),linear-gradient(90deg,rgba(255,255,255,.035) 2px,transparent 2px);background-size:90px 90px}
+.glow{position:absolute;width:1300px;height:1300px;border-radius:50%;right:-500px;top:-250px;background:radial-gradient(circle,rgba(31,162,224,.45),rgba(31,162,224,0) 65%)}
+.logo{position:absolute;top:250px;left:90px;height:80px}
+.pill{position:absolute;top:380px;left:90px;font-weight:800;font-size:34px;letter-spacing:.14em;padding:16px 30px;border-radius:999px}
+/* 1 gancio */
+#s1{background:var(--sky)}
+#s1 .rings{position:absolute;width:1300px;height:1300px;border-radius:50%;left:150px;top:950px;border:3px solid rgba(255,255,255,.25);box-shadow:0 0 0 110px rgba(255,255,255,.07),0 0 0 220px rgba(255,255,255,.05)}
+#s1 .pill{background:var(--blk);color:#fff}
+#s1 h1{position:absolute;top:500px;left:90px;right:90px;font-weight:800;font-size:98px;line-height:1.05;color:#fff}
+#s1 h1 em{font-style:normal;color:var(--blk)}
+#s1 .ph{position:absolute;right:30px;bottom:0;width:760px;height:900px;object-fit:contain;object-position:right bottom}
+#s1 .by{position:absolute;left:90px;top:1180px;color:#fff;font-weight:800;font-size:34px;line-height:1.2;z-index:2}
+#s1 .by small{display:block;font-weight:600;font-size:26px;color:var(--skyl)}
+/* 2 verdetto */
+#s2{background:var(--blk)}
+#s2 .stamp{position:absolute;top:640px;left:0;right:0;margin:0 auto;width:fit-content;font-weight:800;font-size:210px;line-height:1;padding:30px 70px;border:14px solid currentColor;border-radius:40px;letter-spacing:.04em}
+#s2 .sub{position:absolute;top:1060px;left:90px;right:90px;text-align:center;color:#E7EEF4;font-size:50px;line-height:1.3;font-weight:600}
+/* schede */
+.cd{background:var(--blk)}
+.cd .num{position:absolute;top:260px;left:90px;font-weight:800;font-size:34px;letter-spacing:.14em;color:var(--sky2)}
+.cd .dots{position:absolute;top:268px;right:90px;display:flex;gap:12px}
+.cd .dots i{width:56px;height:10px;border-radius:10px;background:rgba(127,208,245,.25)}
+.cd .dots i.on{background:#fff}
+.cd .ic{position:absolute;top:460px;left:90px;width:190px;height:190px;border-radius:50%;background:rgba(31,162,224,.18);border:4px solid var(--sky);display:flex;align-items:center;justify-content:center}
+.cd .ic svg{width:110px;height:110px;stroke:#fff;fill:none;stroke-width:5;stroke-linecap:round;stroke-linejoin:round}
+.cd h2{position:absolute;top:710px;left:90px;right:90px;font-weight:800;font-size:76px;line-height:1.1;color:#fff}
+.cd .tx{position:absolute;left:90px;right:90px;color:#C9D3DD;font-size:46px;line-height:1.4}
+.cd .bars{position:absolute;left:90px;right:90px;display:flex;flex-direction:column;gap:38px}
+.cd .bar .lb{color:#E7EEF4;font-size:36px;font-weight:600;margin-bottom:14px;display:flex;justify-content:space-between}
+.cd .bar .lb b{font-family:Poppins;font-size:44px;color:#fff}
+.cd .bar .tr{height:56px;border-radius:16px;background:rgba(255,255,255,.08);overflow:hidden}
+.cd .bar .fl{height:100%;border-radius:16px;width:0}
+.cd .src{position:absolute;left:90px;top:1560px;font-size:28px;color:#8A95A3;font-weight:600}
+.cd ul{position:absolute;left:90px;right:90px;list-style:none;display:flex;flex-direction:column;gap:26px}
+.cd li{display:flex;gap:26px;align-items:flex-start;color:#E7EEF4;font-size:44px;line-height:1.3;background:rgba(31,162,224,.12);border-radius:22px;padding:26px 30px}
+.cd li b{flex:none;width:58px;height:58px;border-radius:50%;background:var(--sky);color:#fff;font-family:Poppins;font-size:32px;display:flex;align-items:center;justify-content:center}
+/* regola */
+#s6{background:var(--sky)}
+#s6 .pill{background:#fff;color:var(--skyd);top:520px}
+#s6 h3{position:absolute;top:650px;left:90px;right:90px;font-weight:800;font-size:84px;line-height:1.12;color:#fff}
+#s6 h3 em{font-style:normal;color:var(--blk)}
+/* chiusura */
+#s7{background:var(--skyl)}
+#s7 .circ{position:absolute;width:1100px;height:1100px;border-radius:50%;left:-10px;top:1150px;background:var(--sky)}
+#s7 .ph{position:absolute;left:50%;transform:translateX(-50%);bottom:0;width:1000px;height:820px;object-fit:contain;object-position:center bottom}
+#s7 .logo{left:50%;transform:translateX(-50%);height:90px}
+#s7 h4{position:absolute;top:420px;left:90px;right:90px;text-align:center;font-weight:800;font-size:80px;line-height:1.1;color:var(--blk)}
+#s7 .co{position:absolute;top:720px;left:110px;right:110px;text-align:center;background:var(--blk);color:#fff;border-radius:26px;padding:30px 36px;font-size:36px;line-height:1.3;z-index:2}
+#s7 .co small{display:block;color:var(--sky2);font-weight:700;font-size:26px;letter-spacing:.12em;margin-bottom:6px}
+#s7 .h{position:absolute;top:960px;left:0;right:0;text-align:center;font-size:36px;font-weight:700;color:var(--skyd)}
+</style></head><body>
+<div class="sc" id="s1"><div class="rings"></div><img class="ph" src="ph-cover.webp"><img class="logo" src="logo-white.png">
+  <div class="pill" id="k1"></div><h1 class="P" id="hook"></h1><div class="by">Andrea Astarita<small>Ottico optometrista</small></div></div>
+<div class="sc" id="s2"><div class="grid"></div><div class="glow"></div><div class="stamp P" id="stamp"></div><div class="sub" id="vsub"></div></div>
+<div id="cards"></div>
+<div class="sc" id="s6"><img class="logo" src="logo-white.png"><div class="pill">DA RICORDARE</div><h3 class="P" id="rule"></h3></div>
+<div class="sc" id="s7"><div class="circ"></div><img class="ph" src="ph-end.webp"><img class="logo" src="logo-black.png">
+  <h4 class="P">💾 Salvalo per il prossimo esame</h4><div class="co"><small>APPROFONDISCI NEL CORSO</small><span id="corso"></span></div><div class="h">@optometria_giovane · link in bio</div></div>
+<script>
+const D=window.DATA;
+const IC={
+ eye:'<path d="M5 55C20 30 38 20 55 20s35 10 50 35C90 80 72 90 55 90S20 80 5 55z"/><circle cx="55" cy="55" r="16"/>',
+ glasses:'<circle cx="30" cy="62" r="18"/><circle cx="80" cy="62" r="18"/><path d="M48 62h14M12 62L20 35M98 62l-8-27"/>',
+ x:'<path d="M28 28l54 54M82 28L28 82"/>',
+ check:'<path d="M22 58l22 22 46-48"/>',
+ chart:'<path d="M18 92h76M30 80V55M52 80V35M74 80V20"/>',
+ bulb:'<path d="M55 15a28 28 0 0 0-16 51v12h32V66A28 28 0 0 0 55 15zM42 92h26"/>',
+ alert:'<path d="M55 15l42 75H13z"/><path d="M55 45v20M55 76v2"/>',
+ sun:'<circle cx="55" cy="55" r="18"/><path d="M55 12v12M55 86v12M12 55h12M86 55h12M25 25l8 8M77 77l8 8M85 25l-8 8M33 77l-8 8"/>',
+ child:'<circle cx="55" cy="28" r="12"/><path d="M55 40v32M35 52h40M55 72L40 98M55 72l15 26"/>',
+ tool:'<rect x="20" y="30" width="70" height="40" rx="8"/><circle cx="55" cy="50" r="10"/><path d="M40 70v20M70 70v20M30 90h50"/>',
+ clock:'<circle cx="55" cy="55" r="38"/><path d="M55 32v23l16 10"/>',
+ book:'<path d="M15 25h30a10 10 0 0 1 10 10v58a8 8 0 0 0-8-8H15zM95 25H65a10 10 0 0 0-10 10v58a8 8 0 0 1 8-8h32z"/>'
+};
+const TONE={red:'var(--red)',green:'var(--grn)',sky:'var(--sky)'};
+document.getElementById('k1').textContent=D.formato;
+document.getElementById('hook').innerHTML=D.gancio;
+const st=document.getElementById('stamp'); st.textContent=D.verdetto.testo; st.style.color=TONE[D.verdetto.tono]||'var(--sky)';
+document.getElementById('vsub').innerHTML=D.verdetto.sotto;
+document.getElementById('rule').innerHTML=D.regola;
+document.getElementById('corso').textContent=D.corso;
+const cards=document.getElementById('cards'); const NC=D.schede.length;
+D.schede.forEach((c,i)=>{
+  let body='';
+  if(c.tipo==='confronto'){
+    const mx=Math.max(...c.barre.map(b=>b.valore));
+    body=`<div class="bars" style="top:${c.testo?1100:960}px">`+c.barre.map((b,j)=>`<div class="bar"><div class="lb"><span>${b.etichetta}</span><b>${b.mostra}</b></div><div class="tr"><div class="fl" data-w="${b.valore/mx*100}" style="background:${j==0?'var(--red)':'var(--sky)'}"></div></div></div>`).join('')+'</div>'
+      +(c.testo?`<div class="tx" style="top:950px;font-size:40px">${c.testo}</div>`:'');
+  } else if(c.tipo==='lista'){
+    body='<ul style="top:950px">'+c.punti.map((p,j)=>`<li><b>${j+1}</b><span>${p}</span></li>`).join('')+'</ul>';
+  } else { body=`<div class="tx" style="top:950px">${c.testo}</div>`; }
+  cards.insertAdjacentHTML('beforeend',`<div class="sc cd"><div class="grid"></div><div class="glow"></div>
+   <div class="num">${i+1} / ${NC}</div><div class="dots">${D.schede.map((_,k)=>`<i class="${k<=i?'on':''}"></i>`).join('')}</div>
+   <div class="ic"><svg viewBox="0 0 110 110">${IC[c.icona]||IC.bulb}</svg></div><h2 class="P">${c.titolo}</h2>${body}
+   ${c.fonte?`<div class="src">Fonte: ${c.fonte}</div>`:''}</div>`);
+});
+const T1=D.t_gancio||3.6, T2=D.t_verdetto||3.0, TR=D.t_regola||4.2, TE=D.t_fine||4.5;
+const DC=D.schede.map(c=>c.dur||5.2);
+const S=[]; let a=0; [T1,T2,...DC,TR,TE].forEach(d=>{S.push([a,d]);a+=d}); window.TOTAL=a;
+const ease=x=>x<0?0:x>1?1:1-Math.pow(1-x,3);
+const back=x=>{x=Math.max(0,Math.min(1,x));const c=1.70158;return 1+(c+1)*Math.pow(x-1,3)+c*Math.pow(x-1,2)};
+function set(el,o,dy,sc){el.style.opacity=o;el.style.transform=`translateY(${dy}px)`+(sc!=null?` scale(${sc})`:'')}
+const scenes=[document.getElementById('s1'),document.getElementById('s2'),...cards.children,document.getElementById('s6'),document.getElementById('s7')];
+window.render=function(t){
+  scenes.forEach((s,i)=>{
+    const [s0,d]=S[i], lt=t-s0, on=lt>=0&&lt<d;
+    s.style.opacity=on?Math.min(1,lt/0.22):0;
+    if(!on)return;
+    if(i==0){
+      const p=ease(lt/0.8); const ph=s.querySelector('.ph'); ph.style.opacity=p; ph.style.transform=`translateX(${90*(1-p)}px)`;
+      ['.pill','h1','.by'].forEach((q,j)=>{const e=s.querySelector(q);const p2=ease((lt-0.15*j)/0.6);set(e,p2,50*(1-p2))});
+    } else if(i==1){
+      const p=back(lt/0.5); st.style.opacity=Math.min(1,lt/0.15); st.style.transform=`rotate(${-8*p}deg) scale(${2.2-1.2*p})`;
+      const p2=ease((lt-0.6)/0.6); set(document.getElementById('vsub'),p2,40*(1-p2));
+    } else if(i<scenes.length-2){
+      const els=[s.querySelector('.ic'),s.querySelector('h2'),...s.querySelectorAll('.tx,.bars,ul,.src')];
+      els.forEach((e,j)=>{const p=ease((lt-0.12*j)/0.5); if(e.classList.contains('ic')){e.style.opacity=p;e.style.transform=`scale(${0.6+0.4*back(lt/0.5)})`} else set(e,p,50*(1-p))});
+      s.querySelectorAll('.fl').forEach((f,j)=>{f.style.width=(+f.dataset.w*ease((lt-0.7-0.35*j)/1.0))+'%'});
+      s.querySelectorAll('li').forEach((l,j)=>{const p=ease((lt-0.5-0.35*j)/0.5);set(l,p,30*(1-p))});
+    } else if(i==scenes.length-2){
+      ['.pill','h3'].forEach((q,j)=>{const e=s.querySelector(q);const p=ease((lt-0.15*j)/0.6);set(e,p,50*(1-p))});
+    } else {
+      const p=ease(lt/0.8); const ph=s.querySelector('.ph'); ph.style.opacity=p; ph.style.transform=`translateX(-50%) translateY(${120*(1-p)}px)`;
+      ['h4','.co','.h'].forEach((q,j)=>{const e=s.querySelector(q);const p2=ease((lt-0.15*j)/0.6);set(e,p2,40*(1-p2))});
+    }
+  });
+};
+render(0);
+</script></body></html>
