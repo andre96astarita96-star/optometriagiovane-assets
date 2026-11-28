@@ -17,7 +17,9 @@ Tipi di scena:
   punti    {domanda, punti:[{t, sotto?}], clip:[...]}           domanda, poi un punto per taglio
   regola   {pill, grande, testo}                               fondo azzurro
   fine     {corso, titolo?, sotto?, cta:[max 2 frasi da max 30 caratteri]}  chiusura con foto
-Ogni scena accetta "battiti" per forzare la durata (altrimenti calcolata dalla lunghezza dei testi).
+Ogni scena accetta "battiti" per forzare la durata (altrimenti calcolata dalla lunghezza dei testi),
+oppure "secondi" (durata esatta, usata quando c'è la voce: un paragrafo di voce per scena).
+Voce (facoltativa): "voce": "voce.mp3" a volume pieno; voce normalizzata a -15 LUFS, musica a -29 LUFS sotto la voce (-15 LUFS senza voce).
 """
 import subprocess, sys, math, random, os, json
 import numpy as np
@@ -180,13 +182,15 @@ b = 0.0
 DARKS = S.get('scuro', {})
 for sc in S['scene']:
     tipo = sc['tipo']; clips = sc.get('clip', []); dk = sc.get('scuro', 0.75)
+    if sc.get('secondi'): sc['battiti'] = sc['secondi'] / P
     if tipo == 'gancio':
         righe = sc['righe']; n = sc.get('battiti') or max(5, len(righe) + 1.5)
         b0, b1 = b, b + n
+        rstep = min(0.5, max(0.25, (n - 1.5) / max(1, len(righe))))
         add_clips(b0, b1, clips, 1.0, sc.get('scuro', 0.65))
         els.append(E(pill_img(sc.get('pill', S.get('formato', '')), WHITE, BLK), 80, 330, b0 * P + 0.02, b1 * P, 'slam'))
         items = [(text_img(r['t'], FX, 104, WHITE, box=SKY if r.get('evid') else NONE, pad=(22, 4), maxw=960, fit=True),
-                  (b0 + 1 + 0.5 * i) * P, b1 * P, 'pop') for i, r in enumerate(righe)]
+                  (b0 + min(1, n * 0.15) + rstep * i) * P, b1 * P, 'pop') for i, r in enumerate(righe)]
         els += stack(items, 470, 14, x=58)
         fx['glitch'].append(((b1 - 0.25) * P, (b1 + 0.1) * P))
     elif tipo == 'timbro':
@@ -236,7 +240,8 @@ for sc in S['scene']:
         els += stack(items, 640, 20)
     elif tipo == 'grafico':
         barre = sc['barre']; n = sc.get('battiti') or 1 + 2.2 * len(barre) + 1.8; b0, b1 = b, b + n
-        times = [b0 + 0.5 + 2.2 * i for i in range(len(barre))]
+        step = min(2.2, (n - 2) / len(barre)) if n > 3 else 0.8
+        times = [b0 + 0.5 + step * i for i in range(len(barre))]
         for i in range(len(barre)):
             add_clips(times[i] if i else b0, times[i + 1] if i + 1 < len(barre) else b1, [clips[i % len(clips)]] if clips else [], 9, 0.8)
         els.append(E(text_img(sc['titolo'], FX, 64, maxw=920), 80, 340, b0 * P, b1 * P, 'up'))
@@ -250,6 +255,8 @@ for sc in S['scene']:
     elif tipo == 'punti':
         punti = sc['punti']; dq = max(2, math.ceil((len(sc['domanda']) / 28 + 0.2) / P))
         durs = [max(3, math.ceil((chars(p_['t'], p_.get('sotto', '')) / 26 + 0.4) / P)) for p_ in punti]
+        if sc.get('battiti'):
+            tot = dq + sum(durs); k_ = sc['battiti'] / tot; dq *= k_; durs = [d_ * k_ for d_ in durs]
         b0 = b; b1 = b + dq + sum(durs)
         fx['glitch'].append(((b0 - 0.2) * P, (b0 + 0.15) * P))
         add_clips(b0, b0 + dq, clips[:1], 9, 0.9)
@@ -404,11 +411,23 @@ for i in range(n):
 enc.stdin.close(); enc.wait()
 for s in segs: s.clip.close()
 musica = os.path.join(BASE, S.get('musica', 'musica.mp3'))
-if enc.returncode == 0 and os.path.exists(musica):
+voce = os.path.join(BASE, S['voce']) if S.get('voce') else None
+if enc.returncode == 0 and (os.path.exists(musica) or voce):
     off = S.get('musica_inizio', 14.884)
-    r = subprocess.run([FF, '-loglevel', 'error', '-y', '-i', tmp, '-ss', str(off), '-i', musica, '-filter_complex',
-        f'[1:a]atrim=0:{TOTAL:.2f},asetpts=PTS-STARTPTS,afade=t=in:d=0.3,afade=t=out:st={TOTAL - 2.2:.2f}:d=2.2,volume=0.95[a]',
-        '-map', '0:v', '-map', '[a]', '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k', '-shortest', '-movflags', '+faststart', OUT + '.a.mp4'])
+    cmd = [FF, '-loglevel', 'error', '-y', '-i', tmp]
+    fl = []
+    if os.path.exists(musica):
+        cmd += ['-ss', str(off), '-i', musica]
+        fl.append(f'[1:a]atrim=0:{TOTAL:.2f},asetpts=PTS-STARTPTS,afade=t=in:d=0.3,afade=t=out:st={TOTAL - 2.2:.2f}:d=2.2,loudnorm=I={-29 if voce else -15}:TP=-2,volume={1 if voce else 1}[m]')
+    if voce:
+        vi = len([x for x in cmd if x == '-i'])
+        cmd += ['-i', voce]
+        fl.append(f'[{vi}:a]adelay={int(S.get("voce_inizio", 0) * 1000)}|{int(S.get("voce_inizio", 0) * 1000)},loudnorm=I=-15:TP=-1.5:LRA=11,apad[v]')
+    if voce and os.path.exists(musica): fl.append('[v][m]amix=inputs=2:duration=longest:normalize=0,alimiter=limit=0.79:level=false[a]')
+    else: fl.append(f"[{'v' if voce else 'm'}]alimiter=limit=0.79:level=false[a]")
+    cmd += ['-filter_complex', ';'.join(fl), '-map', '0:v', '-map', '[a]', '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k', '-ar', '44100',
+            '-t', f'{TOTAL:.2f}', '-movflags', '+faststart', OUT + '.a.mp4']
+    r = subprocess.run(cmd)
     if r.returncode == 0: os.replace(OUT + '.a.mp4', OUT); os.remove(tmp)
     else: os.replace(tmp, OUT)
 elif enc.returncode == 0: os.replace(tmp, OUT)

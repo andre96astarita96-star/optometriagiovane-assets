@@ -4,31 +4,197 @@
  "musica_inizio": 14.884,
  "bpm": 83.354,
  "scene": [
-  {"tipo": "gancio", "pill": "MITO O REALTÀ?",
-   "righe": [{"t": "Sottocorreggere"}, {"t": "la miopia"}, {"t": "ne frena", "evid": true}, {"t": "la progressione", "evid": true}, {"t": "e il peggioramento?"}],
-   "clip": ["broll-49.mp4", "broll-51.mp4", "broll-48.mp4", "broll-41.mp4", "broll-50.mp4"]},
-  {"tipo": "timbro", "testo": "MITO", "tono": "red"},
-  {"tipo": "frase", "righe": [{"t": "Lasciare la miopia sottocorretta"}, {"t": "NON", "stile": "rosso"}, {"t": "è uno strumento efficace contro la progressione miopica"}],
-   "clip": ["broll-30.mp4", "broll-40.mp4"]},
-  {"tipo": "catena", "pill": "Da dove nasce il mito?", "passi": ["meno potere negativo", "meno accomodazione da vicino", "meno miopia?"], "barrata": true,
-   "clip": ["broll-50.mp4", "broll-51.mp4", "broll-49.mp4"]},
-  {"tipo": "frase", "pill": "Chung et al., Vision Research 2002", "righe": [{"t": "Nei bambini sottocorretti la miopia è progredita"}, {"t": "DI PIÙ", "stile": "rosso"}],
-   "clip": ["broll-48.mp4"]},
-  {"tipo": "titolo", "grande": "META-ANALISI", "righe": ["6 studi · 7–13 anni", "sottocorrezione vs correzione piena"], "clip": ["broll-47.mp4"]},
-  {"tipo": "grafico", "titolo": "Progressione in più vs correzione piena",
-   "barre": [{"etichetta": "Media dei 6 studi", "valore": 0.03, "mostra": "−0,03 D", "nota": "n.s.", "tono": "grey"},
-             {"etichetta": "Sottocorrezione 1–1,5 D", "valore": 0.10, "mostra": "−0,10 D", "nota": "p = 0,02", "tono": "sky"},
-             {"etichetta": "Sottocorrezione > 1,5 D", "valore": 0.26, "mostra": "−0,26 D", "nota": "p < 0,0001", "tono": "red"}],
-   "conclusione": "= la lente diventa miopigena", "fonte": "García García et al., J Clin Med 2020",
-   "clip": ["broll-36.mp4", "broll-25.mp4", "broll-46.mp4"]},
-  {"tipo": "punti", "domanda": "Che strategie possiamo utilizzare nella pratica?",
-   "punti": [{"t": "Refrazione al massimo positivo con la miglior AV"}, {"t": "Follow-up refrattivo ogni 6 mesi"},
-             {"t": "Lenti con defocus periferico", "sotto": "da valutare con il medico oculista di riferimento"}],
-   "clip": ["broll-13.mp4", "broll-39.mp4", "broll-20.mp4", "broll-15.mp4"]},
-  {"tipo": "regola", "pill": "Da ricordare", "grande": "Non sottocorreggere la miopia.",
-   "testo": "Esegui una corretta refrazione e valuta le strategie di gestione con il medico oculista."},
-  {"tipo": "fine", "titolo": "Lo studio completo", "sotto": "è spiegato nella descrizione",
-   "cta": ["CONDIVIDILO con un collega", "COMMENTA: tu cosa ne pensi?"],
-   "corso": "Avanzato Optometria Pediatrica"}
+  {
+   "tipo": "gancio",
+   "pill": "MITO O REALTÀ?",
+   "righe": [
+    {
+     "t": "Sottocorreggere"
+    },
+    {
+     "t": "la miopia"
+    },
+    {
+     "t": "ne frena",
+     "evid": true
+    },
+    {
+     "t": "la progressione",
+     "evid": true
+    },
+    {
+     "t": "e il peggioramento?"
+    }
+   ],
+   "clip": [
+    "broll-49.mp4",
+    "broll-51.mp4",
+    "broll-48.mp4",
+    "broll-41.mp4",
+    "broll-50.mp4"
+   ],
+   "secondi": 7.65
+  },
+  {
+   "tipo": "timbro",
+   "testo": "MITO",
+   "tono": "red",
+   "secondi": 1.58
+  },
+  {
+   "tipo": "frase",
+   "righe": [
+    {
+     "t": "Lasciare la miopia sottocorretta"
+    },
+    {
+     "t": "NON",
+     "stile": "rosso"
+    },
+    {
+     "t": "è uno strumento efficace contro la progressione miopica"
+    }
+   ],
+   "clip": [
+    "broll-30.mp4",
+    "broll-40.mp4"
+   ],
+   "secondi": 4.82
+  },
+  {
+   "tipo": "catena",
+   "pill": "Da dove nasce il mito?",
+   "passi": [
+    "meno potere negativo",
+    "meno accomodazione da vicino",
+    "meno miopia?"
+   ],
+   "barrata": true,
+   "clip": [
+    "broll-50.mp4",
+    "broll-51.mp4",
+    "broll-49.mp4"
+   ],
+   "secondi": 7.92
+  },
+  {
+   "tipo": "frase",
+   "pill": "Chung et al., Vision Research 2002",
+   "righe": [
+    {
+     "t": "Nei bambini sottocorretti la miopia è progredita"
+    },
+    {
+     "t": "DI PIÙ",
+     "stile": "rosso"
+    }
+   ],
+   "clip": [
+    "broll-48.mp4"
+   ],
+   "secondi": 6.413
+  },
+  {
+   "tipo": "titolo",
+   "grande": "META-ANALISI",
+   "righe": [
+    "6 studi · 7–13 anni",
+    "sottocorrezione vs correzione piena"
+   ],
+   "clip": [
+    "broll-47.mp4"
+   ],
+   "secondi": 4.987
+  },
+  {
+   "tipo": "grafico",
+   "titolo": "Progressione in più vs correzione piena",
+   "barre": [
+    {
+     "etichetta": "Media dei 6 studi",
+     "valore": 0.03,
+     "mostra": "−0,03 D",
+     "nota": "n.s.",
+     "tono": "grey"
+    },
+    {
+     "etichetta": "Sottocorrezione 1–1,5 D",
+     "valore": 0.1,
+     "mostra": "−0,10 D",
+     "nota": "p = 0,02",
+     "tono": "sky"
+    },
+    {
+     "etichetta": "Sottocorrezione > 1,5 D",
+     "valore": 0.26,
+     "mostra": "−0,26 D",
+     "nota": "p < 0,0001",
+     "tono": "red"
+    }
+   ],
+   "conclusione": "= la lente diventa miopigena",
+   "fonte": "García García et al., J Clin Med 2020",
+   "clip": [
+    "broll-36.mp4",
+    "broll-25.mp4",
+    "broll-46.mp4"
+   ],
+   "secondi": 10.183
+  },
+  {
+   "tipo": "punti",
+   "domanda": "Che strategie possiamo utilizzare nella pratica?",
+   "punti": [
+    {
+     "t": "Refrazione al massimo positivo con la miglior AV"
+    },
+    {
+     "t": "Follow-up refrattivo ogni 6 mesi"
+    },
+    {
+     "t": "Lenti con defocus periferico",
+     "sotto": "da valutare con il medico oculista di riferimento"
+    }
+   ],
+   "clip": [
+    "broll-13.mp4",
+    "broll-39.mp4",
+    "broll-20.mp4",
+    "broll-15.mp4"
+   ],
+   "secondi": 10.737
+  },
+  {
+   "tipo": "regola",
+   "pill": "Da ricordare",
+   "grande": "Non sottocorreggere la miopia.",
+   "testo": "Esegui una corretta refrazione e valuta le strategie di gestione con il medico oculista.",
+   "secondi": 3.331
+  },
+  {
+   "tipo": "fine",
+   "titolo": "Lo studio completo",
+   "sotto": "è spiegato nella descrizione",
+   "cta": [
+    "CONDIVIDILO con un collega",
+    "COMMENTA: tu cosa ne pensi?"
+   ],
+   "corso": "Avanzato Optometria Pediatrica",
+   "secondi": 7.079
+  }
+ ],
+ "voce": "voce.mp3",
+ "voce_inizio": 0.0,
+ "voce_testo": [
+  "[relaxed] Allora… sottocorreggere la miopia ne frena la progressione? È una cosa che si sente dire spesso, anche tra colleghi.",
+  "Beh… è un mito.",
+  "[casual] Lasciare la miopia sottocorretta non è uno strumento efficace contro la progressione miopica.",
+  "Il ragionamento è questo: meno potere negativo, meno accomodazione da vicino… e quindi meno miopia. Sembra logico, no? E invece no.",
+  "Già nel duemiladue, Chung e colleghi avevano visto che nei bambini sottocorretti la miopia progrediva di più, non di meno.",
+  "Poi c'è una meta-analisi del duemilaventi: sei studi, bambini dai sette ai tredici anni.",
+  "In media, nessun effetto protettivo. Con una sottocorrezione tra una e una diottria e mezza, la miopia avanza di più. E sopra la diottria e mezza… la lente diventa proprio miopigena.",
+  "[casual] Quindi, nella pratica? Refrazione al massimo positivo con la miglior acuità visiva. Follow-up ogni sei mesi. E le lenti a defocus periferico… le valutate insieme al medico oculista di riferimento.",
+  "Quindi, ricordatevi: non sottocorreggete la miopia.",
+  "[relaxed] Lo studio completo ve lo spiego nella descrizione. Mandatelo a un collega e scrivetemi nei commenti cosa ne pensate. Ciao!"
  ]
 }
