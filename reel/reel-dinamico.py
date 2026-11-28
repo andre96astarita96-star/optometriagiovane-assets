@@ -3,7 +3,7 @@
 
 Uso:  python3 reel-dinamico.py storia.json uscita.mp4 [--anteprima t1 t2 ...]
 
-Tagli a tempo di musica, zoom sulle clip, glitch, lampi, tremolio e testi animati.
+Tagli a tempo di musica con passaggi morbidi (zoom + dissolvenza, senza lampi bianchi), zoom, glitch, tremolio e testi animati.
 I file (clip B-roll, logo-white.png, logo-black.png, ph-end.webp, musica.mp3) devono
 stare nella stessa cartella di storia.json. Struttura di storia.json: vedi esempio-dinamico.json.
 
@@ -580,6 +580,22 @@ def build_sfx(path):
         wv.writeframes((buf * 32767).astype(np.int16).tobytes())
     return len(keep)
 
+_TR = {'seg': None, 'last': None, 'last_t': -9, 'prev': None}
+def soft_cut(seg, t, fr):
+    """passaggio morbido tra due clip: la vecchia si avvicina e sfuma nella nuova (niente lampo bianco)."""
+    if seg is not _TR['seg']:
+        _TR['prev'] = _TR['last'] if t - _TR['last_t'] < 0.08 else None
+        _TR['seg'] = seg
+    lt = t - seg.t0 if seg else 1
+    out = fr
+    if _TR['prev'] is not None and lt < 0.24:
+        p = ease(lt / 0.24); z = 1 + 0.10 * p
+        cw, ch = W / z, H / z; o = _TR['prev']
+        old = o.crop((int((W - cw) / 2), int((H - ch) / 2), int((W + cw) / 2), int((H + ch) / 2))).resize((W, H), Image.BILINEAR)
+        out = Image.blend(old, fr, p)
+    _TR['last'] = fr.copy(); _TR['last_t'] = t
+    return out
+
 def render(t):
     end = next((s for s in specials if s[0] == 'end' and s[1] <= t < s[2]), None)
     sol = next((s for s in solids if s[0] <= t < s[1]), None)
@@ -596,6 +612,7 @@ def render(t):
     else:
         seg = next((s for s in segs if s.t0 <= t < s.t1), None)
         fr = bg_frame(seg, t) if seg else Image.new('RGBA', (W, H), BLK + (255,))
+        fr = soft_cut(seg, t, fr)
     for e in els: e.draw(fr, t)
     for kind, t0, t1, data in specials:
         if t0 <= t < t1:
@@ -612,10 +629,8 @@ def render(t):
             fr2 = Image.new('RGBA', (W, H), BLK + (255,))
             fr2.alpha_composite(fr, (int(r_.uniform(-1, 1) * amp * k), int(r_.uniform(-1, 1) * amp * k))); fr = fr2
     fr = glitch(fr, t)
-    for f0 in fx['flash']:
-        if f0 <= t < f0 + 0.12: fr.alpha_composite(Image.new('RGBA', (W, H), (255, 255, 255, int(200 * (1 - (t - f0) / 0.12)))))
     for f0 in fx['redflash']:
-        if f0 <= t < f0 + 0.25: fr.alpha_composite(Image.new('RGBA', (W, H), RED + (int(150 * (1 - (t - f0) / 0.25)),)))
+        if f0 <= t < f0 + 0.25: fr.alpha_composite(Image.new('RGBA', (W, H), RED + (int(70 * (1 - (t - f0) / 0.25)),)))
     return fr.convert('RGB')
 
 if prev:
