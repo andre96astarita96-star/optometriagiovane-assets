@@ -59,7 +59,12 @@
     "broll-30.mp4",
     "broll-40.mp4"
    ],
-   "secondi": 4.82
+   "secondi": 4.82,
+   "anim": {
+    "tipo": "occhio_miope",
+    "inizio": 0.35,
+    "etichetta": "Sottocorretto: fuoco davanti alla retina"
+   }
   },
   {
    "tipo": "catena",
@@ -75,7 +80,12 @@
     "broll-51.mp4",
     "broll-49.mp4"
    ],
-   "secondi": 7.92
+   "secondi": 7.92,
+   "anim": {
+    "tipo": "allungamento",
+    "inizio": 0.2,
+    "etichetta": "L'idea: meno allungamento assiale"
+   }
   },
   {
    "tipo": "frase",
@@ -92,7 +102,12 @@
    "clip": [
     "broll-48.mp4"
    ],
-   "secondi": 6.413
+   "secondi": 6.413,
+   "anim": {
+    "tipo": "freccia_su",
+    "inizio": 0.45,
+    "etichetta": "Progressione più rapida"
+   }
   },
   {
    "tipo": "titolo",
@@ -104,7 +119,11 @@
    "clip": [
     "broll-47.mp4"
    ],
-   "secondi": 4.987
+   "secondi": 4.987,
+   "anim": {
+    "tipo": "studio",
+    "inizio": 0.15
+   }
   },
   {
    "tipo": "grafico",
@@ -146,14 +165,29 @@
    "domanda": "Che strategie possiamo utilizzare nella pratica?",
    "punti": [
     {
-     "t": "Refrazione al massimo positivo con la miglior AV"
+     "t": "Refrazione al massimo positivo con la miglior AV",
+     "anim": {
+      "tipo": "occhio_corretto",
+      "inizio": 0.2,
+      "etichetta": "Correzione piena: fuoco sulla retina"
+     }
     },
     {
-     "t": "Follow-up refrattivo ogni 6 mesi"
+     "t": "Follow-up refrattivo ogni 6 mesi",
+     "anim": {
+      "tipo": "calendario",
+      "inizio": 0.2,
+      "etichetta": "Controllo ogni 6 mesi"
+     }
     },
     {
      "t": "Lenti con defocus periferico",
-     "sotto": "da valutare con il medico oculista di riferimento"
+     "sotto": "da valutare con il medico oculista di riferimento",
+     "anim": {
+      "tipo": "defocus",
+      "inizio": 0.25,
+      "etichetta": "Zona centrale + anelli di defocus"
+     }
     }
    ],
    "clip": [
@@ -169,7 +203,11 @@
    "pill": "Da ricordare",
    "grande": "Non sottocorreggere la miopia.",
    "testo": "Esegui una corretta refrazione e valuta le strategie di gestione con il medico oculista.",
-   "secondi": 3.331
+   "secondi": 3.331,
+   "anim": {
+    "tipo": "check",
+    "inizio": 0.35
+   }
   },
   {
    "tipo": "fine",
@@ -185,16 +223,5 @@
  ],
  "voce": "voce.mp3",
  "voce_inizio": 0.0,
- "voce_testo": [
-  "[relaxed] Allora… sottocorreggere la miopia ne frena la progressione? È una cosa che si sente dire spesso, anche tra colleghi.",
-  "Beh… è un mito.",
-  "[casual] Lasciare la miopia sottocorretta non è uno strumento efficace contro la progressione miopica.",
-  "Il ragionamento è questo: meno potere negativo, meno accomodazione da vicino… e quindi meno miopia. Sembra logico, no? E invece no.",
-  "Già nel duemiladue, Chung e colleghi avevano visto che nei bambini sottocorretti la miopia progrediva di più, non di meno.",
-  "Poi c'è una meta-analisi del duemilaventi: sei studi, bambini dai sette ai tredici anni.",
-  "In media, nessun effetto protettivo. Con una sottocorrezione tra una e una diottria e mezza, la miopia avanza di più. E sopra la diottria e mezza… la lente diventa proprio miopigena.",
-  "[casual] Quindi, nella pratica? Refrazione al massimo positivo con la miglior acuità visiva. Follow-up ogni sei mesi. E le lenti a defocus periferico… le valutate insieme al medico oculista di riferimento.",
-  "Quindi, ricordatevi: non sottocorreggete la miopia.",
-  "[relaxed] Lo studio completo ve lo spiego nella descrizione. Mandatelo a un collega e scrivetemi nei commenti cosa ne pensate. Ciao!"
- ]
+ "musica_volume": 0.12
 }

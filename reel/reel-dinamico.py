@@ -19,6 +19,12 @@ Tipi di scena:
   fine     {corso, titolo?, sotto?, cta:[max 2 frasi da max 30 caratteri]}  chiusura con foto
 Ogni scena accetta "battiti" per forzare la durata (altrimenti calcolata dalla lunghezza dei testi),
 oppure "secondi" (durata esatta, usata quando c'è la voce: un paragrafo di voce per scena).
+Animazioni disegnate (facoltative): in ogni scena "anim": {"tipo": ..., "inizio": 0.3, "etichetta": "...", "y": px?}
+  e nei punti di "punti" (ogni punto può avere "anim"). Tipi: occhio_miope, occhio_corretto, allungamento, defocus,
+  studio, check, croce, calendario, freccia_su, freccia_giu. Vanno sotto il testo della scena (posizione automatica;
+  con un'animazione i testi della scena si rimpiccioliscono). "etichetta" max 38 caratteri.
+Effetti sonori: generati in automatico (whoosh sui tagli, impatti su timbri e tremolii, pop sulle parole,
+  tick sui numeri, ding, glitch, salite); "sfx": false per toglierli, "sfx_volume" (default 1.0) per regolarli.
 Voce (facoltativa): "voce": "voce.mp3" a volume pieno; voce normalizzata a -15 LUFS, musica a -29 LUFS sotto la voce (-15 LUFS senza voce).
 """
 import subprocess, sys, math, random, os, json
@@ -156,6 +162,8 @@ def bg_frame(seg, t):
 # ---------- costruzione della timeline ----------
 segs, els, solids, specials = [], [], [], []
 fx = {'flash': [], 'glitch': [], 'shake': [], 'redflash': []}
+sfx = []  # (tempo, tipo, guadagno)
+anims = []  # (t0, t1, tipo, box, etichetta)
 rnd = random.Random(7)
 clipstart = {}
 def add_clips(b0, b1, clips, every=1.0, dark=0.75):
@@ -178,11 +186,21 @@ def pill_img(txt, fg=BLK, bg=SKY): return text_img(txt.upper(), FX, 38, fg, box=
 STY = {'testo': (FX, 84, WHITE, None), 'evid': (FX, 96, WHITE, SKY), 'rosso': (FX, 140, WHITE, RED),
        'piccolo': (FX, 58, SKYL, None), 'grande': (FX, 112, WHITE, None)}
 
+def place_anim(spec, t0, t1, first_el, ymin=None):
+    if not spec: return
+    if isinstance(spec, str): spec = {'tipo': spec}
+    bottom = max([e.y + e.img.height for e in els[first_el:] if e.t1 > t0 and e.y < 1500] + [700])
+    y = spec.get('y', max(bottom + 30, ymin or 0)); h = min(spec.get('h', 430), 1480 - y)
+    if h < 230: print('animazione saltata (poco spazio):', spec['tipo']); return
+    ts = t0 + spec.get('inizio', 0.25) * (t1 - t0)
+    anims.append((ts, t1, spec['tipo'], (90, y, 900, h), spec.get('etichetta', '')))
+
 b = 0.0
 DARKS = S.get('scuro', {})
 for sc in S['scene']:
     tipo = sc['tipo']; clips = sc.get('clip', []); dk = sc.get('scuro', 0.75)
     if sc.get('secondi'): sc['battiti'] = sc['secondi'] / P
+    first_el = len(els)
     if tipo == 'gancio':
         righe = sc['righe']; n = sc.get('battiti') or max(5, len(righe) + 1.5)
         b0, b1 = b, b + n
@@ -206,14 +224,15 @@ for sc in S['scene']:
     elif tipo == 'frase':
         righe = sc['righe']; n = nb(sc, chars(*[r['t'] for r in righe])); b0, b1 = b, b + n
         add_clips(b0, b1, clips, 2.5, dk)
-        items, y0 = [], 520
+        items, y0 = [], (450 if sc.get('anim') else 520)
+        kz = 0.78 if sc.get('anim') else 1
         if sc.get('pill'): els.append(E(pill_img(sc['pill']), 80, 330, b0 * P, b1 * P, 'left'))
         for i, r in enumerate(righe):
-            fp, sz, col, bx = STY[r.get('stile', 'testo')]
+            fp, sz, col, bx = STY[r.get('stile', 'testo')]; sz = int(sz * kz)
             anim = 'slam' if r.get('stile') in ('rosso', 'grande') else 'up'
             items.append((text_img(r['t'], fp, sz, col, box=bx or NONE, pad=(26, 6), maxw=960), (b0 + 0.2 + 0.6 * i) * P, b1 * P, anim))
             if r.get('stile') == 'rosso': fx['shake'].append(((b0 + 0.3 + 0.6 * i) * P, 0.3, 16))
-        els += stack(items, y0, 24, x=58)
+        els += stack(items, y0, int(24 * kz), x=58)
     elif tipo == 'catena':
         passi = sc['passi']; n = sc.get('battiti') or 1 + 1.5 * len(passi) + (2 if sc.get('barrata', True) else 0.5)
         b0, b1 = b, b + n
@@ -225,9 +244,10 @@ for sc in S['scene']:
         for i, p_ in enumerate(passi):
             last = i == len(passi) - 1
             if i: items.append((ARROW, (b0 + 0.5 + i * per - 0.4) * P, b1 * P, 'pop'))
-            img = text_img(p_, FX, 110 if last else 84, WHITE, box=SKY if last else None, pad=(24, 6), maxw=940)
+            kz = 0.76 if sc.get('anim') else 1
+            img = text_img(p_, FX, int((110 if last else 84) * kz), WHITE, box=SKY if last else None, pad=(24, 6), maxw=940)
             items.append((img, (b0 + 0.5 + i * per) * P, b1 * P, 'slam' if last else 'left'))
-        st = stack(items, 460, 6)
+        st = stack(items, 440 if sc.get('anim') else 460, 2 if sc.get('anim') else 6)
         els += st
         if sc.get('barrata', True):
             specials.append(('strike', (b1 - 2) * P, b1 * P, st[-1])); fx['shake'].append(((b1 - 2) * P, 0.35, 18))
@@ -270,17 +290,21 @@ for sc in S['scene']:
             it = [(text_img(str(i + 1), FX, 200, SKY), bb * P, (bb + d_) * P, 'slam'),
                   (text_img(p_['t'], FX, 82, maxw=940), (bb + 0.4) * P, (bb + d_) * P, 'up')]
             if p_.get('sotto'): it.append((text_img(p_['sotto'], FX, 58, SKYL, maxw=940), (bb + 1.4) * P, (bb + d_) * P, 'up'))
-            els += stack(it, 470, 8); bb += d_
+            els += stack(it, 470, 8)
+            if p_.get('anim'): place_anim(p_['anim'], bb * P, (bb + d_) * P, len(els) - len(it))
+            bb += d_
         n = b1 - b0
     elif tipo == 'regola':
         n = nb(sc, chars(sc['grande'], sc.get('testo', '')) * 0.8); b0, b1 = b, b + n
         solids.append((b0 * P, b1 * P, SKY)); fx['flash'].append(b0 * P)
         els.append(E(pill_img(sc.get('pill', 'DA RICORDARE'), SKYD, WHITE), 80, 380, b0 * P, b1 * P, 'left'))
-        els += stack([(text_img(sc['grande'], FX, 112, BLK, maxw=940), (b0 + 0.3) * P, b1 * P, 'slam'),
-                      (text_img(sc.get('testo', ''), FX, 66, WHITE, maxw=940), (b0 + 1.6) * P, b1 * P, 'up')], 520, 40)
+        kz = 0.8 if sc.get('anim') else 1
+        els += stack([(text_img(sc['grande'], FX, int(112 * kz), BLK, maxw=940), (b0 + 0.3) * P, b1 * P, 'slam'),
+                      (text_img(sc.get('testo', ''), FX, int(66 * kz), WHITE, maxw=940), (b0 + 1.6) * P, b1 * P, 'up')], 480 if sc.get('anim') else 520, int(40 * kz))
     elif tipo == 'fine':
         n = sc.get('battiti', 8); b0, b1 = b, b + n
         specials.append(('end', b0 * P, b1 * P, sc))
+    if sc.get('anim') and tipo not in ('fine', 'timbro'): place_anim(sc['anim'], b * P, (b + n) * P, first_el)
     b += n
 TOTAL = b * P
 
@@ -355,6 +379,207 @@ def glitch(fr, t):
             return Image.fromarray(a).convert('RGBA')
     return fr
 
+# ---------- animazioni disegnate ----------
+def _arc(cx, cy, rx, ry, a0, a1, n=60):
+    return [(cx + rx * math.cos(math.radians(a0 + (a1 - a0) * i / n)), cy + ry * math.sin(math.radians(a0 + (a1 - a0) * i / n))) for i in range(n + 1)]
+def _partial(pts, p):
+    if p >= 1: return pts
+    if p <= 0 or len(pts) < 2: return pts[:1]
+    L = [0]
+    for a, b_ in zip(pts, pts[1:]): L.append(L[-1] + math.dist(a, b_))
+    tgt = L[-1] * p; out = [pts[0]]
+    for i in range(1, len(pts)):
+        if L[i] <= tgt: out.append(pts[i])
+        else:
+            a, b_ = pts[i - 1], pts[i]; f = (tgt - L[i - 1]) / max(1e-6, L[i] - L[i - 1])
+            out.append((a[0] + (b_[0] - a[0]) * f, a[1] + (b_[1] - a[1]) * f)); break
+    return out
+def _line(d, pts, p, col, w=8):
+    q = _partial(pts, p)
+    if len(q) > 1: d.line(q, fill=col, width=w, joint='curve')
+
+def _eye(d, cx, cy, R, p, col=WHITE):
+    _line(d, _arc(cx, cy, R, R, 40, 320), p, col, 7)                       # globo
+    _line(d, _arc(cx - R * 0.82, cy, R * 0.32, R * 0.6, 120, 240), p, col, 7)  # cornea
+    if p > 0.4:
+        a = int(255 * ease((p - 0.4) / 0.3))
+        d.ellipse([cx - R * 0.72, cy - R * 0.34, cx - R * 0.5, cy + R * 0.34], outline=SKY + (a,), width=6)  # cristallino
+    _line(d, _arc(cx, cy, R, R, -40, 40), p, (255, 120, 120), 10)           # retina
+
+def draw_anim(fr, t, a):
+    t0, t1, kind, (x, y, w, h), lab = a
+    lt = t - t0; p = ease(lt / 1.1); al = min(1, (t1 - t) / 0.15)
+    ov = Image.new('RGBA', (W, H), NONE); d = ImageDraw.Draw(ov)
+    d.rounded_rectangle([x, y, x + w, y + h], 30, fill=(11, 13, 18, int(150 * ease(lt / 0.25))))
+    cy = y + h // 2 - (18 if lab else 0); cx = x + w // 2
+    if kind in ('occhio_miope', 'occhio_corretto'):
+        R = min(h * 0.36, 150); ex = cx + 120
+        _eye(d, ex, cy, R, p)
+        corr = kind == 'occhio_corretto'
+        fx_ = ex + R * 0.98 if corr else ex + R * 0.35
+        lens_x = ex - R - 120
+        if corr:
+            lp = ease((lt - 0.2) / 0.5)
+            if lp > 0:
+                d.line([(lens_x - 18, cy - R * 0.8), (lens_x - 4, cy), (lens_x - 18, cy + R * 0.8)], fill=SKY, width=8)
+                d.line([(lens_x + 18, cy - R * 0.8), (lens_x + 4, cy), (lens_x + 18, cy + R * 0.8)], fill=SKY, width=8)
+        rp = ease((lt - 0.5) / 1.2)
+        for k in (-1, 0, 1):
+            yy = cy + k * R * 0.45
+            pts = [(x + 40, yy), (ex - R * 0.62, yy + (k * 6 if corr else 0)), (fx_, cy)]
+            if not corr: pts.append((ex + R * 0.95, cy - k * R * 0.35))
+            _line(d, pts, rp, (255, 214, 102), 5)
+        if rp >= 1:
+            pul = 14 + 6 * math.sin(lt * 8)
+            col = GRN if corr else RED
+            d.ellipse([fx_ - pul, cy - pul, fx_ + pul, cy + pul], fill=col)
+    elif kind == 'allungamento':
+        g = 1 + 0.35 * ease((lt - 0.6) / 1.5)
+        R = min(h * 0.34, 140); rx = R * g
+        _line(d, _arc(cx, cy, rx, R, 0, 360), p, WHITE, 7)
+        _line(d, _arc(cx + rx * 0.0, cy, rx, R, -35, 35), p, (255, 120, 120), 10)
+        if lt > 0.6:
+            yb = cy - R - 30
+            d.line([(cx - rx, yb), (cx + rx, yb)], fill=RED, width=6)
+            for sx in (-1, 1):
+                ex_ = cx + sx * rx
+                d.polygon([(ex_, yb), (ex_ - sx * 22, yb - 13), (ex_ - sx * 22, yb + 13)], fill=RED)
+    elif kind == 'defocus':
+        R = min(h * 0.4, 165)
+        for i, rr in enumerate([R, R * 0.8, R * 0.6, R * 0.4]):
+            pp = ease((lt - 0.15 * i) / 0.6)
+            if pp <= 0: continue
+            col = SKY if i % 2 == 0 else (127, 208, 245)
+            d.ellipse([cx - rr * pp, cy - rr * pp, cx + rr * pp, cy + rr * pp], outline=col, width=12)
+        cp = ease((lt - 0.8) / 0.4)
+        if cp > 0:
+            rc = R * 0.25 * cp; d.ellipse([cx - rc, cy - rc, cx + rc, cy + rc], fill=WHITE)
+    elif kind == 'studio':
+        dw, dh = 230, 290; dx, dy = cx - dw // 2 - 60, cy - dh // 2
+        _line(d, [(dx, dy), (dx + dw - 50, dy), (dx + dw, dy + 50), (dx + dw, dy + dh), (dx, dy + dh), (dx, dy)], p, WHITE, 7)
+        for i in range(5):
+            lp = ease((lt - 0.4 - 0.12 * i) / 0.3)
+            if lp > 0: d.line([(dx + 30, dy + 80 + 38 * i), (dx + 30 + (dw - 70 - (40 if i == 4 else 0)) * lp, dy + 80 + 38 * i)], fill=SKY, width=10)
+        mp = ease((lt - 0.9) / 0.6)
+        if mp > 0:
+            mx_ = dx + dw - 10 + 80 * math.sin(lt * 2) * 0.3; my_ = dy + dh * 0.55
+            d.ellipse([mx_ - 70, my_ - 70, mx_ + 70, my_ + 70], outline=WHITE, width=10)
+            d.line([(mx_ + 50, my_ + 50), (mx_ + 120, my_ + 120)], fill=WHITE, width=18)
+    elif kind in ('check', 'croce'):
+        R = min(h * 0.38, 150); col = GRN if kind == 'check' else RED
+        _line(d, _arc(cx, cy, R, R, -90, 270), p, col, 12)
+        mp = ease((lt - 0.45) / 0.45)
+        if kind == 'check': _line(d, [(cx - R * 0.45, cy), (cx - R * 0.1, cy + R * 0.38), (cx + R * 0.5, cy - R * 0.35)], mp, col, 18)
+        else:
+            _line(d, [(cx - R * 0.4, cy - R * 0.4), (cx + R * 0.4, cy + R * 0.4)], mp, col, 18)
+            _line(d, [(cx + R * 0.4, cy - R * 0.4), (cx - R * 0.4, cy + R * 0.4)], ease((lt - 0.7) / 0.35), col, 18)
+    elif kind == 'calendario':
+        cw_, ch_ = 380, 250; x0, y0 = cx - cw_ // 2, cy - ch_ // 2
+        _line(d, [(x0, y0), (x0 + cw_, y0), (x0 + cw_, y0 + ch_), (x0, y0 + ch_), (x0, y0)], p, WHITE, 7)
+        if p > 0.5: d.rectangle([x0, y0, x0 + cw_, y0 + 50], fill=SKY)
+        for i in range(6):
+            r_, c_ = divmod(i, 3); bx, by = x0 + 30 + c_ * 115, y0 + 75 + r_ * 85
+            on = lt > 0.6 + 0.22 * i
+            d.rounded_rectangle([bx, by, bx + 95, by + 65], 12, fill=(SKY if on else (255, 255, 255, 40)))
+        if lt > 0.6 + 0.22 * 6:
+            r = 70 + 6 * math.sin(lt * 6); ex_, ey_ = x0 + cw_ + 30, y0 + ch_
+            d.ellipse([ex_ - r, ey_ - r, ex_ + r, ey_ + r], fill=GRN)
+            f = font(FX, 54); tw = f.getlength('6'); d.text((ex_ - tw / 2, ey_ - 40), '6', font=f, fill=BLK)
+    elif kind in ('freccia_su', 'freccia_giu'):
+        up = kind == 'freccia_su'; col = RED if up else GRN
+        ys = [0.8, 0.62, 0.7, 0.45, 0.52, 0.2] if up else [0.2, 0.38, 0.3, 0.55, 0.48, 0.8]
+        pts = [(x + 90 + i * (w - 180) / 5, y + h * v - (18 if lab else 0)) for i, v in enumerate(ys)]
+        _line(d, pts, ease((lt - 0.1) / 1.1), col, 12)
+        if lt > 1.2:
+            a_, b_ = pts[-2], pts[-1]; ang = math.atan2(b_[1] - a_[1], b_[0] - a_[0])
+            tip = [b_, (b_[0] - 40 * math.cos(ang - 0.5), b_[1] - 40 * math.sin(ang - 0.5)), (b_[0] - 40 * math.cos(ang + 0.5), b_[1] - 40 * math.sin(ang + 0.5))]
+            d.polygon(tip, fill=col)
+    if lab and lt > 0.8:
+        im = text_img(lab, FB, 38, SKYL, align='center', maxw=860)
+        ov.alpha_composite(im, (cx - im.width // 2, y + h - im.height - 18))
+    if al < 1: ov.putalpha(ov.getchannel('A').point(lambda v: int(v * al)))
+    fr.alpha_composite(ov)
+
+# ---------- effetti sonori (sintetizzati) ----------
+SR = 44100
+def _env(n, a=0.005, r=None):
+    t = np.arange(n) / SR; e = np.minimum(1, t / max(a, 1e-4))
+    return e * (np.exp(-t / r) if r else 1)
+def _lp(x, alpha):
+    y = np.zeros_like(x); acc = 0.0; al = np.broadcast_to(alpha, x.shape)
+    for i in range(len(x)): acc += al[i] * (x[i] - acc); y[i] = acc
+    return y
+_nr = np.random.default_rng(3)
+def sfx_sound(kind):
+    if kind == 'whoosh':
+        n = int(0.38 * SR); t = np.linspace(0, 1, n); x = _nr.standard_normal(n)
+        y = _lp(x, 0.02 + 0.25 * np.sin(np.pi * t) ** 2) * np.sin(np.pi * t) ** 2; return y * 2.2
+    if kind == 'swish':
+        n = int(0.18 * SR); x = _nr.standard_normal(n); y = x - _lp(x, 0.3); return y * np.sin(np.pi * np.linspace(0, 1, n)) ** 2 * 0.5
+    if kind == 'impact':
+        n = int(0.7 * SR); t = np.arange(n) / SR; f = 40 + 90 * np.exp(-t / 0.08)
+        y = np.sin(2 * np.pi * np.cumsum(f) / SR) * np.exp(-t / 0.22)
+        y += _lp(_nr.standard_normal(n), 0.15) * np.exp(-t / 0.03) * 1.5; return y
+    if kind == 'thud':
+        n = int(0.28 * SR); t = np.arange(n) / SR; f = 55 + 70 * np.exp(-t / 0.05)
+        return np.sin(2 * np.pi * np.cumsum(f) / SR) * np.exp(-t / 0.09) * 0.9
+    if kind == 'pop':
+        n = int(0.09 * SR); t = np.arange(n) / SR; f = 700 + 900 * t / 0.09
+        return np.sin(2 * np.pi * np.cumsum(f) / SR) * np.exp(-t / 0.025) * _env(n, 0.002) * 0.6
+    if kind == 'tick':
+        n = int(0.035 * SR); t = np.arange(n) / SR
+        return np.sin(2 * np.pi * 2400 * t) * np.exp(-t / 0.006) * 0.5
+    if kind == 'ding':
+        n = int(1.2 * SR); t = np.arange(n) / SR
+        y = sum(a * np.sin(2 * np.pi * f * t) for f, a in [(1318.5, 1), (2637, 0.35), (3955, 0.12)])
+        return y * np.exp(-t / 0.35) * _env(n, 0.003) * 0.45
+    if kind == 'glitch':
+        n = int(0.32 * SR); t = np.arange(n) / SR; sq = np.sign(np.sin(2 * np.pi * 180 * t))
+        gate = np.repeat(_nr.random(n // 800 + 1) > 0.45, 800)[:n]
+        return (0.6 * sq + 0.5 * _nr.standard_normal(n)) * gate * 0.35
+    if kind == 'riser':
+        n = int(0.7 * SR); t = np.linspace(0, 1, n); x = _nr.standard_normal(n)
+        return _lp(x, 0.01 + 0.3 * t) * t ** 2 * 1.6
+    if kind == 'scratch':
+        n = int(0.26 * SR); t = np.arange(n) / SR; x = _nr.standard_normal(n)
+        y = (x - _lp(x, 0.05)); y = _lp(y, 0.4) * (0.5 + 0.5 * np.sign(np.sin(2 * np.pi * 22 * t))); return y * np.exp(-t / 0.15) * 0.8
+    return np.zeros(10)
+
+def build_sfx(path):
+    for e in els:  # parole e numeri
+        if e.anim == 'pop': sfx.append((e.t0, 'pop', 0.5))
+        elif e.anim == 'slam': sfx.append((e.t0 + 0.12, 'thud', 0.8))
+        elif e.anim == 'left': sfx.append((e.t0, 'swish', 0.5))
+    for f0 in fx['flash']: sfx.append((f0 - 0.15, 'whoosh', 0.5))
+    for g0, g1 in fx['glitch']: sfx.append((g0, 'glitch', 0.7))
+    for s0, du, amp in fx['shake']: sfx.append((s0, 'impact', min(1, amp / 24)))
+    for kind, t0, t1, data in specials:
+        if kind == 'strike': sfx.append((t0, 'scratch', 0.9))
+        if kind == 'chart':
+            for x, tb, mx in data:
+                sfx.append((tb - 0.6, 'riser', 0.5))
+                for k in range(8): sfx.append((tb + k * 0.085, 'tick', 0.6))
+        if kind == 'end': sfx.extend([(t0, 'whoosh', 0.8), (t0 + 0.7, 'ding', 0.8), (t0 + 0.95, 'pop', 0.5)])
+    for t0, t1, kind, box, lab in anims:
+        sfx.append((t0, 'swish', 0.6))
+        if kind in ('check', 'occhio_corretto', 'calendario'): sfx.append((t0 + 1.2, 'ding', 0.6))
+        if kind in ('croce', 'occhio_miope', 'freccia_su'): sfx.append((t0 + 1.1, 'thud', 0.7))
+    ev = sorted(sfx); keep = []
+    for t, k, g in ev:
+        if keep and abs(keep[-1][0] - t) < 0.07 and keep[-1][1] == k: continue
+        keep.append((t, k, g))
+    buf = np.zeros(int((TOTAL + 2) * SR)); cache = {}
+    for t, k, g in keep:
+        if t < 0 or t > TOTAL: continue
+        if k not in cache: cache[k] = sfx_sound(k)
+        snd = cache[k] * g; i = int(t * SR); buf[i:i + len(snd)] += snd[:len(buf) - i]
+    pk = np.abs(buf).max() or 1; buf = buf / pk * 0.5
+    import wave
+    with wave.open(path, 'wb') as wv:
+        wv.setnchannels(1); wv.setsampwidth(2); wv.setframerate(SR)
+        wv.writeframes((buf * 32767).astype(np.int16).tobytes())
+    return len(keep)
+
 def render(t):
     end = next((s for s in specials if s[0] == 'end' and s[1] <= t < s[2]), None)
     sol = next((s for s in solids if s[0] <= t < s[1]), None)
@@ -376,6 +601,8 @@ def render(t):
         if t0 <= t < t1:
             if kind == 'strike': draw_strike(fr, t, t0, data)
             elif kind == 'chart': draw_chart(fr, t, data)
+    for a in anims:
+        if a[0] <= t < a[1]: draw_anim(fr, t, a)
     if not end:
         fr.alpha_composite(logo_w, (80, 150))
         ImageDraw.Draw(fr).rectangle([0, 0, int(W * t / TOTAL), 10], fill=WHITE if sol and sol[2] == SKY else SKY)
@@ -412,23 +639,28 @@ enc.stdin.close(); enc.wait()
 for s in segs: s.clip.close()
 musica = os.path.join(BASE, S.get('musica', 'musica.mp3'))
 voce = os.path.join(BASE, S['voce']) if S.get('voce') else None
-if enc.returncode == 0 and (os.path.exists(musica) or voce):
+fxwav = OUT + '.sfx.wav' if S.get('sfx', True) else None
+if fxwav: print('effetti sonori:', build_sfx(fxwav))
+if enc.returncode == 0:
     off = S.get('musica_inizio', 14.884)
-    cmd = [FF, '-loglevel', 'error', '-y', '-i', tmp]
-    fl = []
+    cmd = [FF, '-loglevel', 'error', '-y', '-i', tmp]; fl = []; mixin = []
+    def nxt(): return len([x for x in cmd if x == '-i'])
     if os.path.exists(musica):
-        cmd += ['-ss', str(off), '-i', musica]
-        fl.append(f'[1:a]atrim=0:{TOTAL:.2f},asetpts=PTS-STARTPTS,afade=t=in:d=0.3,afade=t=out:st={TOTAL - 2.2:.2f}:d=2.2,loudnorm=I={-29 if voce else -15}:TP=-2,volume={1 if voce else 1}[m]')
+        i_ = nxt(); cmd += ['-ss', str(off), '-i', musica]
+        fl.append(f'[{i_}:a]atrim=0:{TOTAL:.2f},asetpts=PTS-STARTPTS,afade=t=in:d=0.3,afade=t=out:st={TOTAL - 2.2:.2f}:d=2.2,loudnorm=I={-29 if voce else -16}:TP=-2[m]'); mixin.append('[m]')
     if voce:
-        vi = len([x for x in cmd if x == '-i'])
-        cmd += ['-i', voce]
-        fl.append(f'[{vi}:a]adelay={int(S.get("voce_inizio", 0) * 1000)}|{int(S.get("voce_inizio", 0) * 1000)},loudnorm=I=-15:TP=-1.5:LRA=11,apad[v]')
-    if voce and os.path.exists(musica): fl.append('[v][m]amix=inputs=2:duration=longest:normalize=0,alimiter=limit=0.79:level=false[a]')
-    else: fl.append(f"[{'v' if voce else 'm'}]alimiter=limit=0.79:level=false[a]")
-    cmd += ['-filter_complex', ';'.join(fl), '-map', '0:v', '-map', '[a]', '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k', '-ar', '44100',
-            '-t', f'{TOTAL:.2f}', '-movflags', '+faststart', OUT + '.a.mp4']
-    r = subprocess.run(cmd)
-    if r.returncode == 0: os.replace(OUT + '.a.mp4', OUT); os.remove(tmp)
+        i_ = nxt(); cmd += ['-i', voce]; dl = int(S.get('voce_inizio', 0) * 1000)
+        fl.append(f'[{i_}:a]adelay={dl}|{dl},loudnorm=I=-15:TP=-1.5:LRA=11,apad[v]'); mixin.append('[v]')
+    if fxwav:
+        i_ = nxt(); cmd += ['-i', fxwav]
+        fl.append(f'[{i_}:a]aformat=channel_layouts=stereo,volume={0.55 * S.get("sfx_volume", 1.0) * (1 if voce else 1.4):.3f}[s]'); mixin.append('[s]')
+    if mixin:
+        fl.append(''.join(mixin) + f'amix=inputs={len(mixin)}:duration=longest:normalize=0,alimiter=limit=0.79:level=false[a]')
+        cmd += ['-filter_complex', ';'.join(fl), '-map', '0:v', '-map', '[a]', '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k', '-ar', '44100',
+                '-t', f'{TOTAL:.2f}', '-movflags', '+faststart', OUT + '.a.mp4']
+        r = subprocess.run(cmd)
+        if r.returncode == 0: os.replace(OUT + '.a.mp4', OUT); os.remove(tmp)
+        else: os.replace(tmp, OUT)
     else: os.replace(tmp, OUT)
-elif enc.returncode == 0: os.replace(tmp, OUT)
+    if fxwav and os.path.exists(fxwav): os.remove(fxwav)
 print('OK', OUT, round(TOTAL, 2), 's')
